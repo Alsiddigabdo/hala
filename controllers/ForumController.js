@@ -332,77 +332,79 @@ class ForumController {
     }
   }
 
-  static async getAllPosts(req, res) {
-    try {
-      const token = req.cookies.token;
-      let userId = null;
-      let currentUserAvatar = null;
-      let currentUserName = null;
+ static async getAllPosts(req, res) {
+  try {
+    const token = req.cookies.token;
+    let userId = null;
+    let currentUserAvatar = null;
+    let currentUserName = null;
 
-      if (token) {
-        try {
-          const decoded = jwt.verify(token, "your_jwt_secret");
-          userId = decoded.id;
-          const userInfo = await forumModel.getUserById(userId);
-          currentUserAvatar = userInfo.avatar 
-            ? userInfo.avatar
-            : 
-            '/uploads/images/pngwing.com.png';
-          currentUserName = userInfo.name;
-        } catch (err) {
-          // لا تسجيل خطأ هنا، فقط تجاهل الرمز غير الصالح
-        }
-      }
-
-      const posts = await forumModel.getAllPosts(userId);
-      const ads = await forumModel.getAllAds();
-      const jobs = await JobModel.getAllJobs();
-      const projects = await ProjectModel.findAll();
-
-      const enrichedPosts = await Promise.all(posts.map(async post => {
-        const isOwner = userId ? await forumModel.isPostOwner(post.id, userId) : false;
-        const liked = userId ? await forumModel.hasLikedPost(post.id, userId) : false;
-
-        return {
-          ...post,
-          user_avatar: post.user_avatar 
-            ? post.user_avatar
-            : 
-            '/uploads/images/pngwing.com.png',
-          comments: post.comments ? post.comments.map(comment => ({
-            ...comment,
-            user_avatar: comment.user_avatar 
-              ? comment.user_avatar
-              : 
-              '/uploads/images/pngwing.com.png'
-          })) : [],
-          showEditDeleteButtons: isOwner,
-          liked: liked
-        };
-      }));
-
-      const enrichedAds = ads.map(ad => ({
-        ...ad,
-        user_avatar: ad.user_avatar 
-          ? ad.user_avatar
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, "your_jwt_secret");
+        userId = decoded.id;
+        const userInfo = await forumModel.getUserById(userId);
+        currentUserAvatar = userInfo.avatar 
+          ? userInfo.avatar
           : 
-          '/uploads/images/pngwing.com.png'
-      }));
-
-      res.render("forum", { 
-        posts: enrichedPosts, 
-        ads: enrichedAds, 
-        jobs, 
-        projects, 
-        currentUserId: userId, 
-        currentUserAvatar, 
-        currentUserName 
-      });
-    } catch (err) {
-      console.error("خطأ في جلب المنشورات:", err);
-      res.status(500).send("حدث خطأ أثناء جلب المنشورات.");
+          '/uploads/images/pngwing.com.png';
+        currentUserName = userInfo.name;
+      } catch (err) {
+        // لا تسجيل خطأ هنا، فقط تجاهل الرمز غير الصالح
+      }
     }
+
+    const posts = await forumModel.getAllPosts(userId);
+    const ads = await forumModel.getAllAds();
+    const jobs = await JobModel.getAllJobs();
+    const projects = await ProjectModel.findAll();
+
+    const enrichedPosts = await Promise.all(posts.map(async post => {
+      const isOwner = userId ? await forumModel.isPostOwner(post.id, userId) : false;
+      const liked = userId ? await forumModel.hasLikedPost(post.id, userId) : false;
+
+      return {
+        ...post,
+        user_avatar: post.user_avatar 
+          ? post.user_avatar
+          : 
+          '/uploads/images/pngwing.com.png',
+        comments: post.comments ? post.comments.map(comment => ({
+          ...comment,
+          user_avatar: comment.user_avatar 
+            ? comment.user_avatar
+            : 
+            '/uploads/images/pngwing.com.png'
+        })) : [],
+        showEditDeleteButtons: isOwner,
+        liked: liked
+      };
+    }));
+
+    const enrichedAds = ads.map(ad => ({
+      ...ad,
+      user_avatar: ad.user_avatar 
+        ? ad.user_avatar
+        : 
+        '/uploads/images/pngwing.com.png'
+    }));
+
+    res.render("forum", { 
+      posts: enrichedPosts, 
+      ads: enrichedAds, 
+      jobs, 
+      projects, 
+      currentUserId: userId, 
+      currentUserAvatar, 
+      currentUserName,
+      user: userId ? { id: userId, avatar: currentUserAvatar, name: currentUserName } : null // ✅ التعديل المضاف
+    });
+  } catch (err) {
+    console.error("خطأ في جلب المنشورات:", err);
+    res.status(500).send("حدث خطأ أثناء جلب المنشورات.");
   }
+}
+
 
   static async getPostDetails(req, res) {
     try {
