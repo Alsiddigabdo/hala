@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>دردشة اعملها براك</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Tajawal:wght@700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        /* --- Existing styles --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Cairo", sans-serif;
+        }
+
+        body {
+            background-color: #f9fbfc;
+            color: #333;
+            font-size: 0.875rem;
+        }
+
+        #chat-container {
+            direction: rtl;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 700px;
+            height: 90vh;
+            background: #FFFFFF;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin: 20px auto;
+            position: relative; /* Needed for error message positioning */
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #FF6B35, #FF8E53);
+            color: #FFFFFF;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+        }
+
+        .chat-header .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-left: 10px;
+            border: 2px solid #FFFFFF;
+        }
+
+        .chat-header h3 {
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1.2rem;
+            margin-left: 10px;
+        }
+
+        .chat-header .status {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        #messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #A78BFA #F5F5F5;
+            background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="none"%3E%3Ccircle cx="50" cy="50" r="20" fill="%23A78BFA" opacity="0.05"/%3E%3C/svg%3E');
+            background-repeat: repeat;
+            width: 100%;
+        }
+
+        #messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #messages::-webkit-scrollbar-thumb {
+            background: #A78BFA;
+            border-radius: 10px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-end;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message.sent {
+            flex-direction: row-reverse;
+        }
+
+        .message img.avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin: 0 10px;
+        }
+
+        .message .content {
+            position: relative;
+            max-width: 65%;
+        }
+
+        .message strong {
+            font-family: 'Tajawal', sans-serif;
+            color: #6B48FF;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .message p {
+            padding: 12px 18px;
+            border-radius: 18px;
+            margin: 0;
+            font-size: 1rem;
+            line-height: 1.4;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .message.received p {
+            background: #FFFFFF;
+            color: #333;
+            border: 1px solid #EDE9FE;
+        }
+
+        .message.sent p {
+            background: linear-gradient(135deg, #6B48FF, #A78BFA);
+            color: #FFFFFF;
+        }
+
+        .message img.message-image {
+            width: 200px;
+            height: auto;
+            border-radius: 10px;
+            margin-top: 10px;
+            transition: transform 0.3s;
+        }
+
+        .message img.message-image:hover {
+            transform: scale(1.05);
+        }
+
+        .delete-message-btn {
+            background: transparent;
+            color: #FF5C5C;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            margin: 0 5px;
+        }
+
+        .delete-message-btn:hover {
+            opacity: 1;
+        }
+
+        #message-form {
+            padding: 15px;
+            background: #FFFFFF;
+            border-top: 1px solid #E5E7EB;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        #message-form textarea {
+            flex: 1;
+            padding: 12px;
+            border-radius: 25px;
+            border: 1px solid #DDD6FE;
+            resize: none;
+            outline: none;
+            font-family: 'Cairo', sans-serif;
+            background: #F9F9F9;
+            transition: border 0.3s;
+        }
+
+        #message-form textarea:focus {
+            border-color: #6B48FF;
+        }
+
+        #message-form button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            background: #FF6B35;
+            color: #FFFFFF;
+            cursor: pointer;
+            transition: background 0.3s, opacity 0.3s;
+            display: flex; /* For spinner alignment */
+            align-items: center; /* For spinner alignment */
+            justify-content: center; /* For spinner alignment */
+        }
+
+        #message-form button:hover {
+            background: #FF8E53;
+        }
+
+        #message-form button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .upload-button {
+            padding: 12px;
+            border-radius: 25px;
+            background: #FF8E53;
+            color: #FFFFFF;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .upload-button:hover {
+            background: #FF6B35;
+        }
+
+        .upload-button i {
+            font-size: 18px;
+        }
+
+        /* --- New styles for error messages and loading spinner --- */
+        .error-message {
+            background-color: #ffebee; /* Light red */
+            color: #c62828; /* Dark red */
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 10px 20px 0; /* Position below header */
+            font-size: 0.9rem;
+            text-align: center;
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.3s ease;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #ffffff;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            margin-left: 8px; /* Space between icon and spinner */
+            display: none; /* Hidden by default */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            #chat-container {
+                width: 100%;
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            .chat-header h3 {
+                font-size: 1rem;
+            }
+
+            .message p {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<%- include('partials/headerhome') %>
+<%- include('partials/headeraction') %>
+<body>
+    <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+        <div class="error-message" style="display: block; margin: 20px auto 0; max-width: 700px;">
+            <i class="fas fa-exclamation-circle"></i> <%= errorMessage %>
+        </div>
+    <% } %>
+    <div id="chat-container">
+        <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+            <div class="error-message" style="display: block; margin-bottom: 10px;">
+                <i class="fas fa-exclamation-circle"></i> <%= errorMessage %>
+            </div>
+        <% } %>
+        <div class="chat-header">
+            <div class="user-info">
+                <% if (friendAvatar) { %>
+                    <img 
+                        src="<%= friendAvatar %>" 
+                        alt="<%= friendName || 'صديق' %>"
+                        onerror="this.src='/uploads/images/pngwing.com.png'" 
+                    />
+                    <div>
+                        <h3><%= friendName || 'صديق' %></h3>
+                        <span class="status">
+                            <%= friendLastActive && (Date.now() - new Date(friendLastActive).getTime() < 5 * 60 * 1000) ? 'متصل الآن' : 'غير متصل' %>
+                        </span>
+                    </div>
+                <% } else { %>
+                    <img src="/uploads/images/pngwing.com.png" alt="صديق" />
+                    <div>
+                        <h3>صديق</h3>
+                        <span class="status">غير متصل</span>
+                    </div>
+                <% } %>
+            </div>
+            <i class="fas fa-ellipsis-h" style="font-size: 18px; cursor: pointer;"></i>
+        </div>
+
+        <div id="error-display" class="error-message"></div> <!-- Error message display area -->
+
+        <div id="messages">
+            <% messages.forEach((message) => { %>
+                <div class="message <%= message.sender_id === userId ? 'sent' : 'received' %>" data-sender-id="<%= message.sender_id %>">
+                    <img 
+                        src="<%= message.sender_avatar %>" 
+                        class="avatar" 
+                        data-user-id="<%= message.sender_id %>"
+                        alt="<%= message.sender_name || 'User' %>"
+                        onerror="this.src='/uploads/images/pngwing.com.png'" 
+                    />
+                    <div class="content">
+                        <strong><%= message.sender_name || 'غير معروف' %></strong>
+                        <p><%= message.content %></p>
+                        <% if (message.image_path) { %>
+                            <img 
+                                class="message-image" 
+                                src="<%= message.image_path %>" 
+                                alt="Message Image" 
+                                onerror="this.style.display='none'" 
+                            />
+                        <% } %>
+                    </div>
+                    <button class="delete-message-btn" data-message-id="<%= message.id %>">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            <% }) %>
+        </div>
+
+        <form id="message-form" enctype="multipart/form-data" style="display: flex; flex-direction: row-reverse;">
+            <textarea name="messageContent" placeholder="اكتب رسالتك..." rows="1"></textarea> <!-- Removed required temporarily to allow image-only messages -->
+            <input type="hidden" name="receiverId" value="<%= friendId %>" />
+            <label class="upload-button">
+                <i class="fas fa-image"></i>
+                <input type="file" name="imagePath" style="display: none" accept="image/*" />
+            </label>
+            <button type="submit">
+                <i class="fas fa-paper-plane"></i>
+                <span class="spinner"></span> <!-- Loading spinner -->
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById("message-form");
+        const messagesContainer = document.getElementById("messages");
+        const errorDisplay = document.getElementById("error-display");
+        const sendButton = form.querySelector("button[type='submit']");
+        const sendButtonIcon = sendButton.querySelector("i");
+        const spinner = sendButton.querySelector(".spinner");
+        const userId = "<%= userId %>";
+        const friendId = "<%= friendId %>";
+        const currentUserAvatar = "<%= currentUserAvatar %>"; // Assuming this is passed from backend
+        const currentUserName = "<%= currentUserName %>"; // Assuming this is passed from backend
+        let lastMessageTimestamp = 0;
+        let pollingInterval;
+
+        // Function to display errors
+        function displayError(message) {
+            errorDisplay.textContent = message;
+            errorDisplay.style.display = "block";
+            setTimeout(() => {
+                errorDisplay.style.display = "none";
+            }, 5000); // Hide after 5 seconds
+        }
+
+        // Function to fetch new messages
+        async function fetchNewMessages() {
+            try {
+                const response = await fetch(`/chat/getMessages?friendId=${friendId}&lastTimestamp=${lastMessageTimestamp}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const newMessages = await response.json();
+                if (newMessages && newMessages.length > 0) {
+                    let maxTimestamp = lastMessageTimestamp;
+                    newMessages.forEach(message => {
+                        appendMessage(message);
+                        const messageTime = new Date(message.created_at).getTime();
+                        if (messageTime > maxTimestamp) {
+                            maxTimestamp = messageTime;
+                        }
+                    });
+                    lastMessageTimestamp = maxTimestamp;
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+            } catch (error) {
+                console.error("Error fetching new messages:", error);
+                // Optionally display a non-intrusive error to the user
+                // displayError("حدث خطأ أثناء تحديث الرسائل.");
+            }
+        }
+
+        // Function to append a message to the chat window
+        function appendMessage(message) {
+            // Prevent adding duplicate messages if polling overlaps with immediate append
+            if (document.querySelector(`.message[data-message-id='${message.id}']`)) {
+                return;
+            }
+
+            const isSent = message.sender_id.toString() === userId.toString();
+            const messageElement = document.createElement("div");
+            messageElement.className = `message ${isSent ? "sent" : "received"}`;
+            messageElement.dataset.senderId = message.sender_id;
+            messageElement.dataset.messageId = message.id; // Add message ID for duplicate check and deletion
+
+            // Use correct avatar based on sender
+            const avatarSrc = message.sender_avatar || '/uploads/images/pngwing.com.png';
+
+            messageElement.innerHTML = `
+                <img 
+                    src="${avatarSrc}" 
+                    class="avatar" 
+                    data-user-id="${message.sender_id}"
+                    alt="${message.sender_name || "User"}" 
+                    onerror="this.src='/uploads/images/pngwing.com.png'" 
+                />
+                <div class="content">
+                    <strong>${message.sender_name || "غير معروف"}</strong>
+                    <p>${message.content ? message.content.replace(/\n/g, '<br>') : ''}</p> <!-- Handle potential null content and newlines -->
+                    ${message.image_path ? `<img class="message-image" src="${message.image_path}" alt="Message Image" onerror="this.style.display='none'" />` : ""}
+                </div>
+                <button class="delete-message-btn" data-message-id="${message.id}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            messagesContainer.appendChild(messageElement);
+        }
+
+        // Event listener for sending messages
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const messageContent = form.messageContent.value.trim();
+            const receiverId = form.receiverId.value;
+            const imageInput = form.querySelector("input[type='file']");
+            const imageFile = imageInput.files[0];
+
+            if (!messageContent && !imageFile) return; // Do nothing if both are empty
+
+            // Show loading state
+            sendButton.disabled = true;
+            sendButtonIcon.style.display = 'none';
+            spinner.style.display = 'inline-block';
+
+            const formData = new FormData();
+            formData.append("messageContent", messageContent);
+            formData.append("receiverId", receiverId);
+            if (imageFile) formData.append("imagePath", imageFile);
+
+            try {
+                const response = await fetch("/chat/sendMessage", {
+                    method: "POST",
+                    body: formData,
+                    // Add credentials if needed, e.g., credentials: 'include'
+                });
+                const data = await response.json();
+
+                if (response.ok && data.success && data.message) {
+                    // Append the sent message immediately
+                    // Ensure the message object from backend has all necessary fields (id, sender_id, sender_name, sender_avatar, content, image_path, created_at)
+                    const sentMessageData = {
+                        ...data.message, // Use the message data from the response
+                        sender_id: userId, // Ensure sender ID is correct
+                        sender_name: currentUserName || 'أنا', // Use current user's name
+                        sender_avatar: currentUserAvatar || '/uploads/images/pngwing.com.png' // Use current user's avatar
+                    };
+                    appendMessage(sentMessageData);
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    
+                    // Clear the form
+                    form.messageContent.value = "";
+                    imageInput.value = ""; // Clear file input
+
+                    // Update timestamp immediately to potentially reduce redundant fetches
+                    const messageTime = new Date(sentMessageData.created_at).getTime();
+                    if (messageTime > lastMessageTimestamp) {
+                         lastMessageTimestamp = messageTime;
+                    }
+                    // Optional: Trigger fetch immediately to sync faster if needed, though polling will catch up
+                    // fetchNewMessages(); 
+                } else {
+                    // Display error using the new function
+                    displayError(data.error || "خطأ غير معروف في إرسال الرسالة");
+                }
+            } catch (error) {
+                console.error("Send message error:", error);
+                displayError("خطأ في الاتصال بالخادم: " + error.message);
+            } finally {
+                // Hide loading state
+                sendButton.disabled = false;
+                sendButtonIcon.style.display = 'inline-block';
+                spinner.style.display = 'none';
+            }
+        });
+
+        // Event listener for deleting messages
+        messagesContainer.addEventListener("click", async (e) => {
+            const deleteButton = e.target.closest(".delete-message-btn");
+            if (deleteButton) {
+                const messageElement = deleteButton.closest(".message");
+                const messageId = deleteButton.dataset.messageId;
+                
+                // Optional: Add confirmation dialog
+                // if (!confirm("هل أنت متأكد من حذف هذه الرسالة؟")) return;
+
+                try {
+                    const response = await fetch(`/chat/delete/${messageId}`, {
+                        method: "POST",
+                        credentials: "include", // Include cookies if needed for auth
+                    });
+                    const data = await response.json();
+                    if(response.ok && data.success){
+                        messageElement.remove(); // Remove the message element from the DOM
+                    } else {
+                        displayError(data.error || "خطأ في حذف الرسالة");
+                    }
+                } catch (error) {
+                    console.error("Delete message error:", error);
+                    displayError("خطأ في الاتصال بالخادم عند محاولة الحذف: " + error.message);
+                }
+            }
+        });
+        
+        // --- Avatar Update Function (Placeholder - Requires Backend Endpoint) ---
+        async function checkAvatarUpdates() {
+            // This function remains as a placeholder until the backend endpoint is confirmed/created.
+            // console.log("Avatar update check skipped - backend endpoint needed.");
+            /*
+            try {
+                const response = await fetch(`/chat/getAvatarUpdates?userId1=${userId}&userId2=${friendId}`); 
+                const updates = await response.json();
+                if (updates && updates.length > 0) {
+                    updates.forEach(update => {
+                        document.querySelectorAll(`.avatar[data-user-id="${update.userId}"]`).forEach(img => {
+                            img.src = update.avatar;
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching avatar updates:", error);
+            }
+            */
+        }
+
+        // Initial fetch of messages and start polling
+        function initializeChat() {
+             // Set initial timestamp from the last message rendered by EJS, if any
+            const lastRenderedMessage = messagesContainer.querySelector('.message:last-child');
+            if (lastRenderedMessage) {
+                // Assuming the backend provides created_at for initial messages
+                // Need to get the timestamp from the EJS data if possible, otherwise start from 0
+                // Example: lastMessageTimestamp = new Date('<%= messages.length ? messages[messages.length - 1].created_at : 0 %>').getTime();
+                // For now, we'll stick to 0 and let the first fetch get everything
+                lastMessageTimestamp = 0; 
+            }
+            
+            fetchNewMessages().then(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll after initial fetch
+            });
+            pollingInterval = setInterval(fetchNewMessages, 1000); // Poll every 1 second
+            // setInterval(checkAvatarUpdates, 15000); // Keep avatar polling commented out
+        }
+
+        // Scroll to the bottom of the messages container on load
+        // Use window.onload or DOMContentLoaded to ensure elements are ready
+        window.addEventListener('load', () => {
+            initializeChat();
+        });
+
+        // Clear polling interval when the user navigates away (optional but good practice)
+        window.addEventListener('beforeunload', () => {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+        });
+
+    </script>
+</body>
+<footer style="margin-top: 10px;"> <!-- Adjusted margin -->
+  <%- include('partials/footer') %>
+</footer>
+</html>
+

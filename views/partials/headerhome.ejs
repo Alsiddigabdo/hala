@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  
+  <!-- Performance Optimizations -->
+  <link rel="preload" href="/css/unified_identity.css" as="style" />
+  <link rel="stylesheet" href="/css/unified_identity.css" />
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
+  
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- SEO Optimizations -->
+  <meta name="description" content="منصة اعملها براك - مجتمع المبدعين العرب للتصنيع الذاتي والإبداع والابتكار" />
+  <meta name="keywords" content="اعملها براك, DIY, تصنيع ذاتي, إبداع, مجتمع عربي, مشاريع يدوية, ابتكار, حرف يدوية" />
+  <link rel="canonical" href="https://www.aemelhabarak.com<%= typeof canonicalUrl !== 'undefined' ? canonicalUrl : '' %>" />
+  
+  <!-- Mobile Enhancements -->
+  <meta name="theme-color" content="#FF6B00" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  
+  <!-- Error Handling -->
+  <script src="/js/error-handler.js" defer></script>
+  
+  <!-- Notification System -->
+  <script src="/js/notification-integration.js" defer></script>
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="/favicon/logo.png" sizes="32x32" />
+  <link rel="shortcut icon" href="/favicon/logo.png" type="image/png" />
+  
+  <!-- Apple Touch Icon for iOS -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/logo.png" />
+  <!-- Fallback favicon.ico for legacy browsers -->
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  
+  <style>
+    /* Reset and Base Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Cairo', sans-serif;
+      
+    }
+    
+    /* Header Styles */
+    .header-container {
+      background-color: #ffffff;
+      width: 100%;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    /* Logo Styles */
+    .logo-container {
+      margin-left: auto;
+    }
+    
+    .logo-container img {
+      height: 50px;
+      width: auto;
+    }
+
+    /* Mobile Navigation Icons */
+    .mobile-nav {
+      display: none;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .mobile-nav-icon {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .mobile-nav-icon i {
+      font-size: 20px;
+      background: linear-gradient(45deg, #FF6B00);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: all 0.3s ease;
+    }
+
+    .mobile-nav-icon:hover {
+      background: linear-gradient(45deg, #FF6B00, #FFA500);
+    }
+
+    .mobile-nav-icon:hover i {
+      -webkit-text-fill-color: white;
+    }
+
+    .mobile-notification-count {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: linear-gradient(45deg, #FF6B00, #FFA500);
+      color: white;
+      border-radius: 50%;
+      min-width: 18px;
+      height: 18px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px;
+      z-index: 2;
+    }
+
+    .mobile-settings-dropdown {
+      position: relative;
+    }
+
+    .mobile-dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 8px 0;
+      min-width: 200px;
+      display: none;
+      z-index: 1000;
+    }
+
+    .mobile-settings-dropdown:hover .mobile-dropdown-menu {
+      display: block;
+    }
+
+    .mobile-dropdown-menu a, 
+    .mobile-dropdown-menu button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      color: #333;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: right;
+      cursor: pointer;
+    }
+
+    .mobile-dropdown-menu a:hover,
+    .mobile-dropdown-menu button:hover {
+      background: linear-gradient(45deg, #FF6B00, #FFA500);
+      color: white;
+    }
+
+    .mobile-dropdown-menu a:hover i,
+    .mobile-dropdown-menu button:hover i {
+      color: white;
+    }
+
+    .mobile-dropdown-menu i {
+      font-size: 16px;
+      color: #FF6B00;
+    }
+
+    /* Show mobile nav only on mobile screens */
+    @media (max-width: 768px) {
+      .mobile-nav {
+        display: flex;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .mobile-nav {
+        gap: 0.8rem;
+      }
+      
+      .mobile-nav-icon {
+        width: 36px;
+        height: 36px;
+      }
+      
+      .mobile-nav-icon i {
+        font-size: 18px;
+      }
+      
+      .mobile-notification-count {
+        min-width: 16px;
+        height: 16px;
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header-container">
+    <!-- Mobile Navigation Icons (visible only on mobile) -->
+    <div class="mobile-nav">
+      <% if (typeof locals !== 'undefined' && locals.userId) { %>
+        <div class="mobile-settings-dropdown">
+          <a href="#" class="mobile-nav-icon" aria-label="الإعدادات">
+            <i class="fas fa-cog"></i>
+          </a>
+          <div class="mobile-dropdown-menu">
+            <a href="/change-password">
+              <i class="fas fa-key"></i>
+              تغيير كلمة المرور
+            </a>
+            <% if (typeof locals !== 'undefined' && locals.isAdmin) { %>
+              <a href="/admin/dashboard">
+                <i class="fas fa-user-shield"></i>
+                لوحة الإدارة
+              </a>
+            <% } %>
+            <button onclick="logout()">
+              <i class="fas fa-sign-out-alt"></i>
+              تسجيل الخروج
+            </button>
+          </div>
+        </div>
+        <a href="/stores" class="mobile-nav-icon" aria-label="المتاجر">
+          <i class="fas fa-store"></i>
+        </a>
+        <a href="/notifications" class="mobile-nav-icon" aria-label="الإشعارات">
+          <i class="fas fa-bell"></i>
+          <% if (typeof locals !== 'undefined' && locals.unreadCount > 0) { %>
+            <span class="mobile-notification-count"><%= locals.unreadCount %></span>
+          <% } %>
+        </a>
+      <% } %>
+    </div>
+
+    <div class="logo-container">
+      <a href="/">
+        <img src="/favicon/logo.png" alt="اعملها براك" />
+      </a>
+    </div>
+  </header>
+
+  <script>
+    function logout() {
+      if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+        fetch('/logout', {
+          method: 'POST',
+          credentials: 'include'
+        })
+        .then(response => {
+          if (response.ok) {
+            if (window.socket) window.socket.disconnect();
+            window.location.href = '/login';
+          } else {
+            throw new Error('فشل تسجيل الخروج');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert("حدث خطأ أثناء تسجيل الخروج");
+        });
+      }
+    }
+  </script>
+</body>
+</html>

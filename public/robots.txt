@@ -1,0 +1,61 @@
+# Sitemap: https://www.colorizme.com/sitemap.xml
+
+# إعدادات عامة
+User-agent: *
+Allow: /
+
+# منع الوصول إلى المسارات الحساسة
+Disallow: /admin/
+Disallow: /dashbord/admin/
+Disallow: /api/
+Disallow: /uploads/private/
+Disallow: /config/
+Disallow: /router/
+Disallow: /node_modules/
+Disallow: /*.json$
+Disallow: /*.js$
+Disallow: /*.css$
+Disallow: /*.md$
+Disallow: /error/
+Disallow: /temp/
+Disallow: /test/
+Disallow: /cgi-bin/
+
+# السماح بالوصول إلى الصفحات الرئيسية
+Allow: /index
+Allow: /about
+Allow: /contact
+Allow: /privacy
+Allow: /forum
+Allow: /jobs
+Allow: /projects
+Allow: /login
+Allow: /signup
+Allow: /forgotPassword
+Allow: /resetPassword
+Allow: /changePassword
+
+# تعليمات خاصة لـ Googlebot
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+# تعليمات خاصة لـ Bingbot
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
+
+# تعليمات خاصة لـ Yandex
+User-agent: Yandex
+Allow: /
+Crawl-delay: 3
+
+# منع الروبوتات المحددة
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+# تحديد موقع خريطة الموقع
+Sitemap: https://www.colorizme.com/sitemap.xml

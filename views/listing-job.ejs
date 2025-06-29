@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>وظائف العمل عن بعد</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-color: #6c5ce7; /* بنفسجي غامق */
+      --secondary-color: #8e7bff; /* بنفسجي فاتح */
+      --background-color: #f7f9fc; /* خلفية فاتحة متناسقة */
+      --text-color: #2d3748; /* لون النص الأساسي */
+      --button-color: #6c5ce7; /* لون الزر الأساسي */
+      --button-hover-color: #5a47d3; /* لون الزر عند التحويم */
+      --border-color: #e2e8f0; /* حدود خفيفة */
+      --shadow-color: rgba(108, 92, 231, 0.15); /* ظل خفيف */
+      --success-color: #2ECC71; /* أخضر للنجاح */
+      --error-color: #E74C3C; /* أحمر للخطأ */
+      --card-bg: #FFFFFF; /* خلفية البطاقات */
+      --accent-color: #ff7675; /* لون الإغلاق */
+      --transition: 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Tajawal", sans-serif;
+    }
+
+    body {
+      background-color: var(--background-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      display: flex;
+      justify-content: space-around;
+      flex-direction: column;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      direction: rtl;
+    }
+
+    .job-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .job-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: var(--shadow-color) 0 4px 20px;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      transition: transform var(--transition), box-shadow var(--transition);
+      border: 1px solid var(--border-color);
+    }
+
+    .job-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-color) 0 8px 30px;
+    }
+
+    .job-icon-container {
+      flex-shrink: 0;
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: transform var(--transition);
+    }
+
+    .job-card:hover .job-icon-container {
+      transform: scale(1.05);
+    }
+
+    .job-icon-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .job-icon-container i {
+      color: #fff;
+      font-size: 2rem;
+    }
+
+    .job-details {
+      flex: 1;
+      text-align: right;
+    }
+
+    .job-details h3 {
+      font-size: 1.6rem;
+      color: var(--primary-color);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .job-meta {
+      font-size: 0.9rem;
+      color: #777;
+      margin-bottom: 0.75rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .job-meta span {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .job-details p {
+      font-size: 1rem;
+      color: var(--text-color);
+      margin-bottom: 0.75rem;
+      line-height: 1.8;
+    }
+
+    .apply-btn {
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(135deg, var(--button-color), var(--secondary-color));
+      color: #fff;
+      border-radius: 25px;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: background var(--transition), transform var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .apply-btn:hover {
+      background: linear-gradient(135deg, var(--button-hover-color), var(--primary-color));
+      transform: translateY(-2px);
+    }
+
+    .hidden-form {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 2rem;
+      width: 90%;
+      max-width: 500px;
+      z-index: 150;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+      transition: transform 0.2s ease;
+    }
+
+    .hidden-form.active {
+      display: block;
+    }
+
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 100;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-backdrop.active {
+      display: block;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--primary-color);
+      cursor: pointer;
+      transition: color var(--transition);
+    }
+
+    .close-modal:hover {
+      color: var(--accent-color);
+    }
+
+    .hidden-form h3 {
+      font-size: 1.5rem;
+      color: var(--primary-color);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .hidden-form textarea {
+      width: 100%;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      font-size: 1rem;
+      resize: vertical;
+      min-height: 120px;
+      background: #F9F9F9;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .hidden-form textarea:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 8px var(--shadow-color);
+      outline: none;
+    }
+
+    .hidden-form button[type="submit"] {
+      width: 100%;
+      padding: 0.9rem;
+      background: linear-gradient(135deg, var(--button-color), var(--secondary-color));
+      border: none;
+      border-radius: 25px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      transition: background var(--transition), transform var(--transition);
+    }
+
+    .hidden-form button[type="submit"]:hover {
+      background: linear-gradient(135deg, var(--button-hover-color), var(--primary-color));
+      transform: translateY(-2px);
+    }
+
+    .message-success,
+    .message-error {
+      text-align: center;
+      font-weight: 700;
+      margin: 1rem 0;
+    }
+
+    .message-success {
+      color: var(--success-color);
+    }
+
+    .message-error {
+      color: var(--error-color);
+    }
+  </style>
+</head>
+<header>
+  <%- include('partials/headerhome') %>
+  <%- include('partials/headeraction') %>
+</header>
+
+<body>
+  <br>
+  <br>
+  <div class="container">
+    <% if (typeof successMessage !== 'undefined' && successMessage) { %>
+      <p class="message-success"><%= successMessage %></p>
+    <% } %>
+    <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+      <p class="message-error"><%= errorMessage %></p>
+    <% } %>
+
+    <div class="job-grid">
+      <% if (!jobs || jobs.length === 0) { %>
+        <p style="text-align: center; color: var(--text-color); font-size: 1.2rem;">لا توجد وظائف متاحة حاليًا.</p>
+      <% } else { %>
+        <% jobs.forEach(function(job) { %>
+          <div class="job-card">
+            <div class="job-icon-container">
+              <% if (job.logo) { %>
+                <img src="/uploads/picjobs/<%= job.logo %>" alt="<%= job.title %> Logo" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                <i class="fas fa-briefcase" style="display: none;"></i>
+              <% } else { %>
+                <i class="fas fa-briefcase"></i>
+              <% } %>
+            </div>
+            <div class="job-details">
+              <h3><%= job.title %></h3>
+              <div class="job-meta">
+                <span><i class="fas fa-clock"></i> <%= job.job_type %></span>
+                <span><i class="fas fa-map-marker-alt"></i> <%= job.location %></span>
+              </div>
+              <p><strong>الوصف:</strong> <%= job.description %></p>
+              <p>
+                <strong>الراتب:</strong>
+                <% if (job.salary_after_interview == 1) { %>
+                  الراتب بعد المقابلة
+                <% } else if (job.salary_min && job.salary_max) { %>
+                  <%= job.salary_min %> - <%= job.salary_max %> <%= job.currency || '' %>
+                <% } else { %>
+                  غير محدد
+                <% } %>
+              </p>
+            </div>
+            <button class="apply-btn" onclick="openModal('<%= job.job_id %>')">
+              التقديم <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        <% }); %>
+      <% } %>
+    </div>
+  </div>
+
+  <div id="modal-backdrop" class="modal-backdrop"></div>
+
+  <% if (jobs && jobs.length > 0) { %>
+    <% jobs.forEach(function(job) { %>
+      <div id="modal-<%= job.job_id %>" class="hidden-form">
+        <button class="close-modal" onclick="closeModal('<%= job.job_id %>')">×</button>
+        <h3>تقديم طلب لوظيفة: <%= job.title %></h3>
+        <form id="apply-form-<%= job.job_id %>" onsubmit="submitApplication(event, '<%= job.job_id %>')">
+          <input type="hidden" name="job_id" value="<%= job.job_id %>" />
+          <textarea name="cover_letter" placeholder="اكتب رسالة التقديم هنا..." required></textarea>
+          <button type="submit">إرسال الطلب</button>
+          <div id="form-message-<%= job.job_id %>" class="form-message"></div>
+        </form>
+      </div>
+    <% }); %>
+  <% } %>
+
+  <script>
+    function openModal(jobId) {
+      const modal = document.getElementById(`modal-${jobId}`);
+      if (modal) {
+        modal.classList.add("active");
+        document.getElementById("modal-backdrop").classList.add("active");
+        document.getElementById(`form-message-${jobId}`).innerHTML = "";
+      }
+    }
+
+    function closeModal(jobId) {
+      const modal = document.getElementById(`modal-${jobId}`);
+      if (modal) {
+        modal.classList.remove("active");
+        document.getElementById("modal-backdrop").classList.remove("active");
+      }
+    }
+
+    async function submitApplication(event, jobId) {
+      event.preventDefault();
+      const form = document.getElementById(`apply-form-${jobId}`);
+      const formData = new FormData(form);
+      const jsonData = Object.fromEntries(formData);
+      const messageElement = document.getElementById(`form-message-${jobId}`);
+
+      try {
+        const response = await fetch("/apply-job", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(jsonData),
+          credentials: 'include'
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          messageElement.innerHTML = '<span style="color: var(--success-color);">✅ تم إرسال الطلب بنجاح!</span>';
+          form.reset();
+          setTimeout(() => closeModal(jobId), 2000);
+        } else {
+          messageElement.innerHTML = `<span style="color: var(--error-color);">❌ ${result.message || 'فشل في إرسال الطلب'}</span>`;
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        messageElement.innerHTML = '<span style="color: var(--error-color);">❌ حدث خطأ أثناء الإرسال.</span>';
+      }
+    }
+  </script>
+</body>
+
+<footer style="margin-top: 80vh !important;">
+  <%- include("partials/footer") %>
+</footer>
+</html>

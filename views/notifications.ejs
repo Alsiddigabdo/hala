@@ -1,0 +1,452 @@
+  <!-- Critical CSS -->
+  <style>
+    .notifications-page .notification-count {
+      background-color: #6c5ce7;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      margin-right: 8px;
+    }
+    .notifications-page .avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 37%, #f0f0f0 63%);
+      background-size: 400% 100%;
+      animation: skeleton-loading 1.2s ease-in-out infinite;
+      border-radius: 8px;
+      min-height: 60px;
+      margin-bottom: 10px;
+    }
+    @keyframes skeleton-loading {
+      0% { background-position: 100% 50%; }
+      100% { background-position: 0 50%; }
+    }
+    .notifications-container {
+      min-height: 350px;
+      transition: min-height 0.3s cubic-bezier(.4,0,.2,1);
+    }
+    .notification-list {
+      min-height: 300px;
+      transition: min-height 0.3s cubic-bezier(.4,0,.2,1);
+    }
+    .skeleton {
+      min-height: 60px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+    }
+  </style>
+
+  <!-- Load CSS files -->
+  <link rel="stylesheet" href="/css/notifications.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/messages-ui.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  
+  <title>الإشعارات</title>
+  <!-- Removed inline styles, using notifications.css -->
+</head>
+<body>
+  <header>
+    <%- include('partials/headerhome') %>
+    <%- include('partials/headeraction') %>
+  </header>
+
+  <main class="notifications-page">
+    <div class="container">
+      <div class="notifications-header">
+        <h1>الإشعارات <span id="unread-count-display" class="notification-count" style="display: <%= locals.unreadCount > 0 ? 'inline-block' : 'none' %>;"><%= locals.unreadCount %></span></h1>
+        <button type="button" class="delete-all-btn" id="delete-all-notifications-btn" <%= notifications.length === 0 ? 'disabled' : '' %>>
+          <i class="fas fa-trash"></i>&nbsp;حذف الكل
+        </button>
+      </div>
+
+      <!-- Feedback message area -->
+      <div id="feedback-message-area"></div>
+
+      <!-- Display initial messages passed from server -->
+      <% if (typeof successMessage !== 'undefined' && successMessage) { %>
+        <div class="feedback-message message-success" style="display: block;"><%= successMessage %></div>
+      <% } %>
+      <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+        <div class="feedback-message message-error" style="display: block;"><%= errorMessage %></div>
+      <% } %>
+
+      <div class="notifications-container">
+        <ul class="notification-list" id="notification-list">
+          <% if (notifications.length === 0) { %>
+            <li class="no-notifications">لا توجد إشعارات لعرضها</li>
+          <% } else { %>
+            <% notifications.forEach(notification => { %>
+              <li class="notification-item <%= notification.viewed ? 'viewed' : 'unread' %>" data-id="<%= notification.id %>">
+                <div class="notification-content">
+                  <div class="notification-avatar">
+                    <img
+                     src="<%= notification.sender_id === userId ? currentUserAvatar : (notification.sender_avatar || 
+    (notification.sender_avatar && notification.sender_avatar.startsWith("http") ? notification.sender_avatar : 
+    `/uploads/images/pngwing.com.png`)) %>"                   class="avatar"
+                      alt="<%= notification.sender_name || 'User' %>"
+                      onerror="this.src='/uploads/images/pngwing.com.png'"
+                      style="width: 35px; height: 35px; object-fit: cover; border-radius: 50%;"
+                    />
+                  </div>
+                  <div class="notification-details">
+                    <div class="notification-header">
+                      <strong><%= notification.sender_name || 'Admin' %></strong>
+                      <span class="created-at">
+                        <%= new Date(notification.created_at).toLocaleString('ar-EG', { hour12: true }) %>
+                      </span>
+                    </div>
+                    <p class="notification-message"><%= notification.message %></p>
+                    <% if (notification.image_url) { %>
+                      <div class="notification-image-wrapper">
+                        <img
+                          src="<%= notification.image_url %>"
+                          class="notification-image"
+                          alt="صورة الإشعار"
+                          onerror="this.style.display='none'"
+                          width="60"
+                          height="60"
+                        />
+                      </div>
+                    <% } %>
+                  </div>
+                </div>
+                <div class="notification-actions">
+                  <button type="button" class="delete-btn" data-notification-id="<%= notification.id %>" aria-label="حذف الإشعار">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </li>
+            <% }) %>
+          <% } %>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <%- include('partials/footer') %>
+  </footer>
+
+  <script defer>
+    // Skeleton loading عند بدء الصفحة
+    const notificationList = document.getElementById('notification-list');
+    if (notificationList && notificationList.children.length === 0) {
+      for (let i = 0; i < 3; i++) {
+        const skeleton = document.createElement('li');
+        skeleton.className = 'skeleton';
+        notificationList.appendChild(skeleton);
+      }
+    }
+
+    // Add at the beginning of your script section
+    document.addEventListener('DOMContentLoaded', function() {
+        // Clear browser cache for this page
+        if (window.performance && window.performance.navigation.type === 0) {
+            window.location.reload(true);
+        }
+        
+        // Force reload images
+        document.querySelectorAll('img').forEach(img => {
+            const src = img.src;
+            img.src = src + '?v=' + new Date().getTime();
+        });
+
+        // Script remains largely the same, ensure variables like userId and currentUserAvatar are passed correctly
+        const userId = "<%= typeof userId !== 'undefined' ? userId : '' %>";
+        const currentUserAvatar = "<%= typeof currentUserAvatar !== 'undefined' ? currentUserAvatar : '/uploads/images/pngwing.com.png' %>";
+        const notificationList = document.getElementById('notification-list');
+        const feedbackArea = document.getElementById('feedback-message-area');
+        const unreadCountDisplay = document.getElementById('unread-count-display');
+        const deleteAllButton = document.getElementById('delete-all-notifications-btn');
+        let lastNotificationTimestamp = 0; // Initialize timestamp
+        let pollingInterval;
+
+        // Function to display feedback messages
+        function displayFeedback(message, type = 'success') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `feedback-message message-${type}`;
+            messageDiv.textContent = message;
+            feedbackArea.innerHTML = ''; // Clear previous messages
+            feedbackArea.appendChild(messageDiv);
+            messageDiv.style.display = 'block';
+            setTimeout(() => {
+                messageDiv.style.transition = 'opacity 0.5s ease';
+                messageDiv.style.opacity = '0';
+                setTimeout(() => messageDiv.remove(), 500);
+            }, 4000);
+        }
+
+               // Function to update the unread count display
+        function updateUnreadCountDisplay(count) {
+            try {
+                const numericCount = Number(count) || 0;
+                if (unreadCountDisplay) {
+                    if (numericCount > 0) {
+                        unreadCountDisplay.textContent = numericCount;
+                        unreadCountDisplay.style.display = 'inline-block'; // Use inline-block for span
+                    } else {
+                        unreadCountDisplay.textContent = '0';
+                        unreadCountDisplay.style.display = 'none';
+                    }
+                }
+                // Update header count (assuming id='header-unread-count')
+                const headerUnreadCount = document.getElementById('header-unread-count');
+                if (headerUnreadCount) {
+                    if (numericCount > 0) {
+                        headerUnreadCount.textContent = numericCount;
+                        headerUnreadCount.style.display = 'inline-block';
+                    } else {
+                        headerUnreadCount.style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating unread count display:', error);
+            }
+        }
+
+        // Function to add a notification to the list
+        function addNotification(notification, prepend = false) {
+            const noNotifications = notificationList.querySelector('.no-notifications');
+            if (noNotifications) noNotifications.remove();
+
+            if (notificationList.querySelector(`.notification-item[data-id="${notification.id}"]`)) return;
+
+            const li = document.createElement('li');
+            li.className = `notification-item ${notification.viewed ? 'viewed' : 'unread'}`;
+            li.dataset.id = notification.id;
+
+            const senderAvatar = notification.sender_id && notification.sender_id.toString() === userId.toString()
+                ? currentUserAvatar
+                : (notification.sender_avatar || '/uploads/images/pngwing.com.png');
+
+            li.innerHTML = `
+                <div class="notification-content">
+                    <div class="notification-avatar">
+                        <img
+                            src="${senderAvatar}"
+                            class="avatar"
+                            alt="${notification.sender_name || 'User'}"
+                            onerror="this.src='/uploads/images/pngwing.com.png'"
+                            style="width: 35px; height: 35px; object-fit: cover; border-radius: 50%;"
+                        />
+                    </div>
+                    <div class="notification-details">
+                        <div class="notification-header">
+                            <strong>${notification.sender_name || 'Admin' }</strong>
+                            <span class="created-at">${new Date(notification.created_at).toLocaleString('ar-EG', { hour12: true })}</span>
+                        </div>
+                        <p class="notification-message">${notification.message}</p>
+                        ${notification.image_url ? `<div class="notification-image-wrapper"><img src="${notification.image_url}" class="notification-image" alt="صورة الإشعار" onerror="this.style.display='none'" width="60" height="60" /></div>` : ''}
+                    </div>
+                </div>
+                <div class="notification-actions">
+                    <button type="button" class="delete-btn" data-notification-id="${notification.id}" aria-label="حذف الإشعار">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+
+            if (prepend) {
+                notificationList.prepend(li);
+            } else {
+                notificationList.appendChild(li);
+            }
+            // Re-enable delete all button if it was disabled
+            if (deleteAllButton) deleteAllButton.disabled = false;
+        }
+
+        // Function to fetch new notifications (Polling)
+        async function fetchNewNotifications() {
+            if (!userId) return; // Don't poll if not logged in
+            try {
+                const response = await fetch(`/notifications/getNew?lastTimestamp=${lastNotificationTimestamp}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Response is not JSON');
+                }
+                
+                const data = await response.json();
+
+                if (data && data.notifications && Array.isArray(data.notifications) && data.notifications.length > 0) {
+                    let maxTimestamp = lastNotificationTimestamp;
+                    data.notifications.forEach(notification => {
+                        if (notification && notification.id) {
+                            addNotification(notification, true);
+                            const notificationTime = new Date(notification.created_at).getTime();
+                            if (notificationTime > maxTimestamp) maxTimestamp = notificationTime;
+                        }
+                    });
+                    lastNotificationTimestamp = maxTimestamp;
+                    if (typeof data.unreadCount !== 'undefined') {
+                        updateUnreadCountDisplay(data.unreadCount);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching new notifications:', error);
+            }
+        }
+
+        // Function to fetch the current unread count
+        async function fetchUnreadNotificationCount() {
+            if (!userId) return; // Don't fetch if not logged in
+            try {
+                const response = await fetch('/notifications/unread-count');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                if (data.success) {
+                    updateUnreadCountDisplay(data.unreadCount);
+                }
+            } catch (error) {
+                console.error('Error fetching unread notification count:', error);
+            }
+        }
+
+        // Event listener for clicking on notifications (mark as read) or delete button
+        notificationList.addEventListener('click', async (e) => {
+            const targetItem = e.target.closest('.notification-item');
+            const deleteButton = e.target.closest('button.delete-btn');
+
+            if (deleteButton) {
+                e.stopPropagation();
+                const notificationId = deleteButton.dataset.notificationId;
+                const listItem = deleteButton.closest('li.notification-item');
+
+                deleteButton.disabled = true;
+                deleteButton.innerHTML = '<span class="spinner-small"></span>'; // Show spinner
+
+                try {
+                    const response = await fetch(`/notifications/delete/${notificationId}`, {
+                         method: 'POST',
+                         headers: { 'Content-Type': 'application/json' },
+                    });
+                    let result = {};
+                    try {
+                        result = await response.json();
+                    } catch(jsonErr) {
+                        result = { message: 'خطأ في استجابة السيرفر (ليست JSON)' };
+                    }
+                    if (response.ok && result.success) {
+                        listItem.style.transition = 'opacity 0.3s ease';
+                        listItem.style.opacity = '0';
+                        setTimeout(() => {
+                            listItem.remove();
+                            if (notificationList.children.length === 0 || notificationList.querySelectorAll('li.notification-item').length === 0) {
+                                 notificationList.innerHTML = '<li class="no-notifications">لا توجد إشعارات لعرضها</li>';
+                                 if(deleteAllButton) deleteAllButton.disabled = true;
+                            }
+                            fetchUnreadNotificationCount(); // Update count after deletion
+                        }, 300);
+                        displayFeedback('تم حذف الإشعار بنجاح.', 'success');
+                    } else {
+                        // عرض رسالة الخطأ القادمة من السيرفر بشكل واضح
+                        let errorMsg = result.message || 'فشل حذف الإشعار';
+                        if (response.status === 401) errorMsg = 'يجب تسجيل الدخول أولاً لحذف الإشعار';
+                        displayFeedback(errorMsg, 'error');
+                        throw new Error(errorMsg);
+                    }
+                } catch (error) {
+                    console.error('Error deleting notification:', error);
+                    // لا داعي لعرض الرسالة هنا لأننا عرضناها بالفعل أعلاه
+                    deleteButton.disabled = false;
+                    deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+                }
+
+            } else if (targetItem && targetItem.classList.contains('unread')) {
+                const notificationId = targetItem.dataset.id;
+                try {
+                    const response = await fetch(`/notifications/mark-as-viewed/${notificationId}`, {
+                         method: 'POST',
+                         headers: { 'Content-Type': 'application/json' },
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        targetItem.classList.remove('unread');
+                        targetItem.classList.add('viewed');
+                        fetchUnreadNotificationCount();
+                    } else {
+                        console.error('Failed to mark notification as viewed');
+                    }
+                } catch (error) {
+                    console.error('Error marking notification as viewed:', error);
+                }
+            }
+        });
+
+        // Event listener for the 'Delete All' button
+        if (deleteAllButton) {
+            deleteAllButton.addEventListener('click', async () => {
+                if (!confirm('هل أنت متأكد من حذف جميع الإشعارات؟ هذا الإجراء لا يمكن التراجع عنه.')) return;
+
+                deleteAllButton.disabled = true;
+                deleteAllButton.innerHTML = '<span class="spinner-small"></span> جاري الحذف...';
+
+                try {
+                    const response = await fetch('/notifications/delete-all', {
+                         method: 'POST',
+                         headers: { 'Content-Type': 'application/json' },
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        notificationList.innerHTML = '<li class="no-notifications">لا توجد إشعارات لعرضها</li>';
+                        updateUnreadCountDisplay(0);
+                        displayFeedback('تم حذف جميع الإشعارات بنجاح.', 'success');
+                        deleteAllButton.disabled = true; // Keep disabled after successful deletion
+                    } else {
+                        throw new Error(result.message || 'فشل حذف جميع الإشعارات');
+                    }
+                } catch (error) {
+                    console.error('Error deleting all notifications:', error);
+                    displayFeedback(error.message || 'حدث خطأ أثناء حذف الكل.', 'error');
+                    deleteAllButton.disabled = notificationList.querySelectorAll('li.notification-item').length === 0; // Re-enable only if there are items
+                } finally {
+                     if (!deleteAllButton.disabled) {
+                        deleteAllButton.innerHTML = '<i class="fas fa-trash"></i>&nbsp;حذف الكل';
+                     }
+                }
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const lastRenderedNotification = notificationList.querySelector('li.notification-item:first-child'); // Check first for timestamp logic
+            if (lastRenderedNotification) {
+                 // Extract timestamp if needed, otherwise start polling from 0
+                 // Example: const timestampStr = lastRenderedNotification.querySelector('.created-at').textContent;
+                 // lastNotificationTimestamp = parseTimestamp(timestampStr); // Need a parsing function
+                 lastNotificationTimestamp = 0; // Defaulting to 0 for simplicity
+            }
+
+            if (userId) { // Only fetch/poll if user is logged in
+                fetchUnreadNotificationCount();
+                pollingInterval = setInterval(fetchNewNotifications, 30000);
+            }
+            // إزالة skeleton بعد أول تحميل إشعارات
+            fetchNewNotifications().then(() => {
+              document.querySelectorAll('.skeleton').forEach(el => el.remove());
+            });
+            // Initial check for delete all button state
+            if (deleteAllButton) {
+                 deleteAllButton.disabled = notificationList.querySelectorAll('li.notification-item').length === 0;
+            }
+        });
+
+        // Clear polling interval when the user navigates away
+        window.addEventListener('beforeunload', () => {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+        });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /private/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /uploads/private/
+
+# Sitemaps
+Sitemap: https://www.aemelhabarak.com/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 10
