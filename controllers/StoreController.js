@@ -235,7 +235,23 @@ class StoreController {
     }
   }
 
-  // باقي الدوال كما هي — ما فيها مشاكل syntax
+  static async getUserStores(req, res) {
+    try {
+      const userId = req.user.id;
+      const stores = await StoreModel.getStoresByUserId(userId);
+
+      res.json({
+        success: true,
+        stores: stores
+      });
+    } catch (error) {
+      console.error("خطأ في جلب متاجر المستخدم:", error);
+      res.status(500).json({
+        success: false,
+        message: "حدث خطأ في الخادم"
+      });
+    }
+  }
 }
 
 module.exports = StoreController;
