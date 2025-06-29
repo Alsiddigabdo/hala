@@ -51,11 +51,12 @@ const requireAdmin = (req, res, next) => {
 // صفحة جميع المتاجر
 router.get("/", StoreController.listStores);
 
-// صفحة متجر محدد
-router.get("/:storeId", StoreController.getStorePage);
-
+// 🛠️ مهم: يجب وضع هذا قبل "/:storeId" لتجنب التعارض
 // لوحة تحكم المتجر (للمالك)
 router.get("/:storeId/dashboard", verifyToken, requireAuth, StoreController.getStoreDashboard);
+
+// صفحة متجر محدد
+router.get("/:storeId", StoreController.getStorePage);
 
 // ===== مسارات طلبات إنشاء المتاجر =====
 
@@ -106,9 +107,7 @@ router.patch("/products/:productId/images/:imageId/set-primary", verifyToken, re
 // إحصائيات النظام (للأدمن)
 router.get("/admin/stats", verifyToken, requireAuth, requireAdmin, StoreController.getSystemStats);
 
-// ===== معالجة الأخطاء =====
-
-// معالجة أخطاء multer
+// ===== معالجة أخطاء multer =====
 router.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {
     if (error.code === "LIMIT_FILE_SIZE") {
@@ -118,17 +117,15 @@ router.use((error, req, res, next) => {
       });
     }
   }
-  
+
   if (error.message === "يُسمح برفع الصور فقط") {
     return res.status(400).json({
       success: false,
       message: error.message
     });
   }
-  
+
   next(error);
 });
 
 module.exports = router;
-
-
